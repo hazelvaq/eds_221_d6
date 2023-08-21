@@ -66,3 +66,78 @@ exclude_bb_cc_pie <- pie_crab %>% filter(!site %in% c("BB","CC","PIE"))
 # Create a subset from pie_crab that only contains observations from sites "NIB", "CC","ZI" for crabs with carapace size exceeding 13
 
 sites_size <- pie_crab %>% filter(site %in% c("NIB", "CC","ZI") & size > 13)
+
+
+## Select and exclude columns by using select()
+
+#---------------Selecting columns-------------#
+
+# Select individual columns by name, separate them by a comma
+crabs_subset <- pie_crab %>% select(latitude, size, water_temp)
+
+## This gives me the column names
+names(crabs_subset)
+
+## Select a range of columns
+crabs_subset2 <- pie_crab %>% select(site:air_temp)
+#Use them in combination select a range and an individual column
+
+crabs_subset3 <- pie_crab %>% select(date:water_temp,name)
+
+# Reorder things
+pie_crab %>% select(name,water_temp,size)
+
+#--------Mutate------------#
+#Use dplyr::mutate() to add or update a column, while keeping all existing columns
+
+crabs_cm <- pie_crab %>%
+  mutate(size_cm = size /10)
+
+# What happens if I use mutate to add a new column containing the mean of the size column?
+
+crabs_mean <- pie_crab %>%
+  mutate(mean_size = mean(size, na.rm = TRUE))
+
+# This overwrites a column that says AWESOME but instead just make a new column a much safer approach
+crabs_awesome <- pie_crab %>%
+  mutate(name = "Teddy is awesome")
+
+## Reminder of group by and summarize
+mean_size_by_site <- pie_crab %>%
+  group_by(site) %>%
+  summarize(mean_size = mean(size,na.rm=TRUE),
+            sd_size = sd(size,na.rm = TRUE))
+
+# Group by then mutate
+
+group_mutate <- pie_crab %>%
+  group_by(site) %>%
+  mutate(mean_size = mean(size,na.rm = TRUE))
+
+## Multiple group by
+
+penguins %>%
+  group_by(species,island, year) %>%
+  summarize(mean_body_mass = mean(body_mass_g,na.rm =TRUE))
+
+#What if I want to create a new column in pie_cra that contains "giant" if the size is greater than 35, or "not giant" if the size is less than or equal to 35?
+
+#Use dplyr::case_when() to write if_else statement more easily
+
+crabs_bin <- pie_crab %>%
+  mutate(size_binned = case_when(
+    size > 20  ~ "giant",
+    size <= 20 ~ "not giant"
+  ))
+
+## Match by string
+# TRUE ~ : then if anything else is true have it say "HIGH"
+
+sites_binned <- pie_crab %>%
+  mutate(region = case_when(
+    site %in% c("ZI","CC","PIE") ~ "Low",
+    site %in% c("BB","NIB") ~ "Middle",
+    TRUE ~ "HIGH"
+  ))
+
+#.default = here to set the default to something
